@@ -1,18 +1,749 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Мій сайт</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рукопис: текст у вигляді почерку на папері</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Bad+Script&family=Caveat:wght@400..700&family=Marck+Script&family=Neucha&family=Pangolin&family=Comforter&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mat:#35584a;
+  --mat-line:#3e6454;
+  --mat-dark:#243d33;
+  --panel:#eef2ef;
+  --text:#15201b;
+  --muted:#566660;
+  --accent:#1b3fa8;
+  --border:#cfd8d3;
+  --paper:#fffefa;
+  --line:#a9bfdc;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Onest',system-ui,sans-serif;color:var(--text);background:var(--mat);line-height:1.45}
+:focus-visible{outline:3px solid #f2b705;outline-offset:2px}
+
+/* Шапка */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 24px;background:var(--mat-dark);color:var(--panel)}
+.brand{font-family:'Marck Script',cursive;font-size:30px;line-height:1}
+.who{font-size:13px;opacity:.8}
+.who:empty{display:none}
+.lg{padding:8px 14px;border:1px solid var(--panel);border-radius:999px;background:transparent;color:var(--panel);font:inherit;font-weight:500;cursor:pointer}
+.abox{width:min(92vw,380px);padding:18px;border-radius:14px;background:var(--panel);display:flex;flex-direction:column;gap:6px}
+.abox input{width:100%;padding:10px 12px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;font:inherit}
+.ap{margin:4px 0 8px;font-size:14px;color:var(--muted)}
+#amsg{min-height:20px;margin:4px 0;font-size:14px;color:#8a1f17}
+#amsg.ok{color:#1f6f43}
+.acts{display:flex;flex-direction:column;gap:8px}
+.acts .btn2{margin-top:0}
+@media (max-width:560px){.who{display:none}.nav{gap:8px}}
+.nav{display:flex;align-items:center;gap:16px}
+.hl{color:var(--panel);font-weight:500;text-decoration:none}
+.hl:hover{text-decoration:underline}
+.pop{position:fixed;top:64px;right:16px;z-index:40;width:min(300px,calc(100vw - 32px));padding:14px 16px;border-radius:12px;background:var(--paper);color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.pop[hidden]{display:none}
+.pop p{margin:6px 0 10px;font-size:14px}
+.pop button{padding:8px 14px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.dl{display:inline-block;padding:9px 18px;border-radius:999px;background:var(--paper);color:var(--accent);font-weight:600;text-decoration:none;font-size:15px}
+.dl:hover{background:#fff}
+
+/* Каркас */
+.layout{display:grid;grid-template-columns:340px 1fr;align-items:start}
+.panel{background:var(--panel);padding:20px 20px 28px;min-height:calc(100vh - 62px)}
+.desk{padding:28px 16px 40px;display:flex;flex-direction:column;align-items:center;gap:28px;overflow:hidden;
+  background-color:var(--mat);
+  background-image:linear-gradient(var(--mat-line) 1px,transparent 1px),linear-gradient(90deg,var(--mat-line) 1px,transparent 1px);
+  background-size:24px 24px}
+
+/* Панель керування */
+.field{margin-bottom:18px}
+.field>label,.field>.lbl{display:flex;justify-content:space-between;font-weight:600;font-size:14px;margin-bottom:6px}
+.field>label span{font-weight:400;color:var(--muted)}
+textarea,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font:inherit;background:#fff;color:var(--text)}
+textarea{min-height:150px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--border);cursor:pointer;padding:0}
+.sw[aria-pressed=true]{box-shadow:0 0 0 3px var(--accent)}
+input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
+.btn{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:#15318a}
+.note{margin:0 0 14px;padding:10px 12px;border-radius:8px;background:#fde8e6;color:#8a1f17;font-size:14px}
+.note[hidden]{display:none}
+
+/* Аркуш */
+.sheet{position:relative;width:210mm;height:296mm;flex:none;background-color:var(--paper);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden;
+  --step:8mm;--left:20mm;--top:18mm;--shift:0px;--fs:24px;--ink:#1b3fa8;
+  --off:calc(var(--top) + var(--shift));
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.paper-blank{background-image:none}
+.paper-lined{
+  background-image:linear-gradient(to bottom,transparent calc(100% - 1px),var(--line) 0);
+  background-size:100% var(--step);
+  background-position:0 var(--off)}
+.paper-grid{
+  background-image:
+    linear-gradient(to bottom,transparent calc(100% - 1px),var(--line) 0),
+    linear-gradient(to right,transparent calc(100% - 1px),var(--line) 0);
+  background-size:var(--step) var(--step);
+  background-position:var(--left) var(--off)}
+.paper-slant{
+  background-image:
+    linear-gradient(to bottom,transparent calc(100% - 1px),var(--line) 0),
+    repeating-linear-gradient(115deg,transparent 0,transparent calc(11mm - 1px),#cdd9ea calc(11mm - 1px),#cdd9ea 11mm);
+  background-size:100% var(--step),auto;
+  background-position:0 var(--off),0 0}
+.out{position:absolute;left:var(--left);top:var(--top);right:8mm;bottom:12mm;overflow:hidden;
+  white-space:pre-wrap;overflow-wrap:break-word;
+  line-height:var(--step);font-size:var(--fs);color:var(--ink);font-family:'Caveat',cursive}
+.out .w{display:inline-block}
+
+/* Реклама і контакти */
+.ad{width:min(210mm,100%);min-height:90px;display:flex;align-items:center;justify-content:center;border:2px dashed #7fa392;border-radius:10px;color:#c9ddd2;font-size:14px;text-align:center;padding:10px}
+.foot{background:var(--mat-dark);color:var(--panel);padding:22px 24px;text-align:center}
+.foot h2{margin:0 0 6px;font-size:18px}
+.foot p{margin:0}
+.foot a{color:#ffe08a}
+
+.g,.th{fill:none;stroke:currentColor;stroke-width:.035;stroke-linecap:round;stroke-linejoin:round}
+.g{display:inline-block;height:1.5em;margin:-1.05em 0 -.45em;overflow:visible}
+.btn2{width:100%;margin-top:8px;padding:9px;border:1px solid var(--accent);border-radius:8px;background:#fff;color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
+.btn2[hidden]{display:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(10,20,15,.82);display:flex;align-items:center;justify-content:center}
+.ov[hidden]{display:none}
+.ovbox{width:min(96vw,920px);height:min(94vh,940px);background:var(--panel);border-radius:14px;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.ovhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ic{width:40px;height:40px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:18px;cursor:pointer}
+.nm{display:block;font-weight:600;font-size:14px}
+#hname{width:100%;padding:10px 12px;margin:4px 0 12px;border:1px solid var(--border);border-radius:8px;font:inherit}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{padding:8px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;font:inherit;font-weight:600;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.gh{margin:10px 0 6px;font-weight:600;font-size:14px;color:var(--muted)}
+.gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.cell{aspect-ratio:1;padding:2px;border:1px solid var(--border);border-radius:8px;background:#fff;font:inherit;font-size:20px;color:#9aa8a1;cursor:pointer}
+.cell.done{color:var(--accent);border-color:var(--accent)}
+.th{width:100%;height:100%}
+#prog{margin:12px 0;font-size:14px;color:var(--muted)}
+#vdraw{display:flex;flex-direction:column;gap:12px}
+#vdraw[hidden]{display:none}
+.dnav{display:flex;align-items:center;justify-content:center;gap:16px;font-weight:600}
+.dnav .ic{width:52px;height:52px}
+#cv{align-self:center;background:#fff;border:1px solid var(--border);border-radius:10px;touch-action:none;cursor:crosshair}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.row button{padding:10px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;font:inherit;cursor:pointer}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .panel{min-height:0}
+  .top{padding:10px 16px}
+}
+
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  .top,.panel,.ad,.foot,.pop,.ov{display:none!important}
+  .layout{display:block}
+  .desk{padding:0;background:none;display:block;overflow:visible}
+  .sheet{zoom:1!important;box-shadow:none;margin:0}
+}
+</style>
 </head>
 <body>
-  <header style="display:flex; justify-content:space-between; padding:12px 24px;">
-    <b>Мій сайт</b>
-    <a href="#">Скачати додаток</a>
-  </header>
-  <h1>Привіт, світе! Оновлено</h1>
-  <p>Це мій перший сайт в інтернеті.</p>
+
+<header class="top">
+  <div class="brand">Рукопис</div>
+  <nav class="nav"><a class="hl" href="#help">Допомога</a><span class="who" id="who"></span><button class="lg" id="loginBtn" type="button">Увійти</button><a class="dl" id="download" href="#">Скачати додаток</a></nav>
+</header>
+<div class="pop" id="pop" role="status" hidden>
+  <b>Додаток ще вчиться писати</b>
+  <p>Поки що Рукопис живе тут, у браузері. Додайте сторінку в закладки, і ваші почерки завжди будуть під рукою.</p>
+  <button type="button" id="popx">Зрозуміло</button>
+</div>
+
+<main class="layout">
+  <section class="panel" aria-label="Налаштування">
+    <div class="field">
+      <label for="text">Ваш текст</label>
+      <textarea id="text">Привіт! Це приклад тексту, написаного від руки.
+Змініть текст, шрифт, колір чорнила та вигляд паперу.</textarea>
+    </div>
+
+    <div class="field">
+      <label for="font">Шрифт</label>
+      <select id="font">
+        <option value="Caveat">Caveat</option>
+        <option value="Marck Script">Marck Script</option>
+        <option value="Bad Script">Bad Script</option>
+        <option value="Neucha">Neucha</option>
+        <option value="Pangolin">Pangolin</option>
+        <option value="Comforter">Comforter</option>
+      </select>
+      <button class="btn2" id="editHand" type="button" hidden>Налаштувати свій почерк</button>
+    </div>
+
+    <div class="field">
+      <label for="fs">Розмір шрифту <span id="fsv"></span></label>
+      <input type="range" id="fs" min="12" max="48" value="24">
+    </div>
+
+    <div class="field">
+      <label for="step">Відстань між рядками <span id="stepv"></span></label>
+      <input type="range" id="step" min="5" max="14" value="8">
+    </div>
+
+    <div class="field">
+      <label for="shift">Підняти або опустити текст <span id="shiftv"></span></label>
+      <input type="range" id="shift" min="-10" max="10" value="0">
+    </div>
+
+    <div class="field">
+      <div class="lbl">Колір чорнила</div>
+      <div class="swatches" id="swatches"></div>
+    </div>
+
+    <div class="field">
+      <label for="paper">Вигляд сторінки</label>
+      <select id="paper">
+        <option value="lined">У лінійку</option>
+        <option value="grid">У клітинку</option>
+        <option value="slant">У косу лінійку</option>
+        <option value="blank">Чистий аркуш</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="check"><input type="checkbox" id="join" checked> З’єднувати літери, як у зошиті (свій почерк)</label>
+    </div>
+
+    <div class="field">
+      <label class="check"><input type="checkbox" id="natural" checked> Природний вигляд (слова трохи «гуляють»)</label>
+    </div>
+
+    <p class="note" id="overflow" hidden>Текст не вмістився на аркуш. Скоротіть його або зменште розмір.</p>
+
+    <button class="btn" id="print" type="button">Надрукувати</button>
+  </section>
+
+  <section class="desk" id="desk" aria-label="Аркуш">
+    <div class="sheet paper-lined" id="sheet">
+      <div class="out" id="out"></div>
+    </div>
+
+    <div class="ad">Тут буде реклама</div>
+  </section>
+</main>
+
+<footer class="foot" id="help">
+  <h2>Допомога та зв’язок з менеджером</h2>
+  <p>Є запитання, помилка чи ідея? Напишіть нам: Telegram <a href="https://t.me/Andriimali">@Andriimali</a> або пошта <a href="mailto:rykopuc@gmail.com">rykopuc@gmail.com</a></p>
+</footer>
+
+<div class="ov" id="ov" hidden role="dialog" aria-modal="true" aria-label="Свій почерк">
+  <div class="ovbox">
+    <div class="ovhead"><b>Свій почерк: обведіть кожну літеру</b><button class="ic" id="ovx" type="button" aria-label="Закрити">✕</button></div>
+    <div id="vgrid">
+      <label class="nm" for="hname">Назва почерку</label>
+      <input id="hname" maxlength="40" placeholder="Наприклад: Мій крутий почерк">
+      <div class="tabs" id="tabs">
+        <button type="button" data-t="uk">Українська</button>
+        <button type="button" data-t="ru">Русский</button>
+        <button type="button" data-t="en">English</button>
+        <button type="button" data-t="sym">Цифри й знаки</button>
+      </div>
+      <div id="gridbox"></div>
+      <p id="prog"></p>
+      <button class="btn" id="make" type="button">Створити почерк</button>
+      <button class="btn2" id="delHand" type="button">Видалити цей почерк</button>
+    </div>
+    <div id="vdraw" hidden>
+      <div class="dnav"><button class="ic" id="prev" type="button" aria-label="Попередня літера">◀</button><span id="dt"></span><button class="ic" id="next" type="button" aria-label="Наступна літера">▶</button></div>
+      <canvas id="cv"></canvas>
+      <div class="row"><button id="undo" type="button">Скасувати штрих</button><button id="clr" type="button">Очистити літеру</button><button id="back" type="button">До алфавіту</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="auth" hidden role="dialog" aria-modal="true" aria-label="Вхід">
+  <div class="abox">
+    <div class="ovhead"><b>Вхід або реєстрація</b><button class="ic" id="ax" type="button" aria-label="Закрити">✕</button></div>
+    <p class="ap">Увійдіть, щоб зберігати свої почерки в хмарі й відкривати їх на будь-якому пристрої.</p>
+    <label class="nm" for="aemail">Пошта</label>
+    <input id="aemail" type="email" autocomplete="email">
+    <label class="nm" for="apass">Пароль (мінімум 6 символів)</label>
+    <input id="apass" type="password" autocomplete="current-password">
+    <p id="amsg" role="status"></p>
+    <div class="acts">
+      <button class="btn" id="ain" type="button">Увійти</button>
+      <button class="btn2" id="aup" type="button">Зареєструватися</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const sheet = $('sheet');
+const out = $('out');
+const COLORS = ['#1b3fa8', '#14213d', '#111111', '#b3261e', '#1f6f43', '#6b2fa0'];
+const PRESETS = {
+  grid:  { step: 5,  fs: 17 },
+  lined: { step: 8,  fs: 24 },
+  slant: { step: 12, fs: 34 },
+  blank: { step: 9,  fs: 26 }
+};
+let ink = COLORS[0];
+
+/* Випадкові, але стабільні числа від -1 до 1 */
+function rnd(i) {
+  const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+  return (x - Math.floor(x)) * 2 - 1;
+}
+
+function render() {
+  out.textContent = '';
+  const natural = $('natural').checked;
+  const custom = isHand();
+  const parts = $('text').value.split(/(\s+)/);
+  const frag = document.createDocumentFragment();
+  let n = 0;
+  for (const p of parts) {
+    if (p === '') continue;
+    if (/^\s+$/.test(p)) {
+      frag.appendChild(document.createTextNode(p));
+      continue;
+    }
+    const s = document.createElement('span');
+    fillWord(s, p, custom);
+    if (natural) {
+      n++;
+      const dy = rnd(n) * 1.6;
+      const rot = rnd(n * 7 + 3) * 1.4;
+      s.className = 'w';
+      s.style.transform = 'translateY(' + dy.toFixed(2) + 'px) rotate(' + rot.toFixed(2) + 'deg)';
+    }
+    frag.appendChild(s);
+  }
+  out.appendChild(frag);
+  checkOverflow();
+}
+
+function checkOverflow() {
+  $('overflow').hidden = !(out.scrollHeight > out.clientHeight + 2);
+}
+
+function applyStyle() {
+  sheet.style.setProperty('--step', $('step').value + 'mm');
+  sheet.style.setProperty('--fs', $('fs').value + 'px');
+  sheet.style.setProperty('--shift', $('shift').value + 'px');
+  sheet.style.setProperty('--ink', ink);
+  out.style.fontFamily = isHand() ? "'Caveat', cursive" : "'" + $('font').value + "', cursive";
+  $('editHand').hidden = !isHand();
+  sheet.className = 'sheet paper-' + $('paper').value;
+  $('fsv').textContent = $('fs').value + ' px';
+  $('stepv').textContent = $('step').value + ' мм';
+  $('shiftv').textContent = $('shift').value + ' px';
+  checkOverflow();
+}
+
+/* Підбір розміру аркуша під екран */
+function fit() {
+  const avail = $('desk').clientWidth - 32;
+  sheet.style.zoom = Math.min(1, avail / 794);
+}
+
+/* Кольори чорнила */
+function buildSwatches() {
+  const box = $('swatches');
+  COLORS.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sw';
+    b.style.background = c;
+    b.setAttribute('aria-label', 'Колір ' + c);
+    b.setAttribute('aria-pressed', c === ink ? 'true' : 'false');
+    b.addEventListener('click', () => setInk(c));
+    box.appendChild(b);
+  });
+  const pick = document.createElement('input');
+  pick.type = 'color';
+  pick.id = 'inkPick';
+  pick.value = ink;
+  pick.setAttribute('aria-label', 'Свій колір');
+  pick.addEventListener('input', () => setInk(pick.value));
+  box.appendChild(pick);
+}
+
+function setInk(c) {
+  ink = c;
+  document.querySelectorAll('.sw').forEach(b =>
+    b.setAttribute('aria-pressed', b.style.background && rgbToHex(b.style.background) === c.toLowerCase() ? 'true' : 'false'));
+  $('inkPick').value = c;
+  applyStyle();
+}
+
+function rgbToHex(rgb) {
+  const m = rgb.match(/\d+/g);
+  if (!m) return rgb;
+  return '#' + m.slice(0, 3).map(v => Number(v).toString(16).padStart(2, '0')).join('');
+}
+
+/* Події */
+$('text').addEventListener('input', render);
+$('natural').addEventListener('change', render);
+$('join').addEventListener('change', render);
+['fs', 'step', 'shift'].forEach(id => $(id).addEventListener('input', applyStyle));
+$('font').addEventListener('change', () => {
+  const v = $('font').value;
+  if (v === '__new') {
+    const h = { id: 'h' + Date.now(), name: 'Мій почерк ' + (HANDS.length + 1), g: {} };
+    HANDS.push(h);
+    saveHand();
+    buildFonts();
+    $('font').value = 'hand:' + h.id;
+    useHand(h.id);
+    applyStyle();
+    render();
+    openEd();
+    return;
+  }
+  if (v.startsWith('hand:')) useHand(v.slice(5));
+  applyStyle();
+  render();
+});
+$('paper').addEventListener('change', () => {
+  const p = PRESETS[$('paper').value];
+  $('step').value = p.step;
+  $('fs').value = p.fs;
+  applyStyle();
+});
+$('print').addEventListener('click', () => window.print());
+$('download').addEventListener('click', e => { e.preventDefault(); $('pop').hidden = !$('pop').hidden; });
+$('popx').addEventListener('click', () => { $('pop').hidden = true; });
+addEventListener('keydown', e => { if (e.key === 'Escape') $('pop').hidden = true; });
+window.addEventListener('resize', fit);
+
+/* ---- Власний почерк ---- */
+const SETS = {
+  uk: 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя',
+  ru: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
+  en: 'abcdefghijklmnopqrstuvwxyz'
+};
+const OTH = '0123456789.,!?:;-()«»“”’…—';
+const NORM = { "'": '’', '"': '“' };
+let TAB = 'uk', ALL = [];
+function setList() { const l = SETS[TAB]; ALL = l ? [...l, ...l.toUpperCase()] : [...OTH]; }
+setList();
+function GROUPS() {
+  const l = SETS[TAB];
+  return l ? [['Малі літери', l], ['Великі літери', l.toUpperCase()]] : [['Цифри та знаки', OTH]];
+}
+let HANDS = [], GL = {}, CUR = null;
+try {
+  HANDS = JSON.parse(localStorage.getItem('rukopys.hands')) || [];
+  const old = JSON.parse(localStorage.getItem('rukopys.hand'));
+  if (!HANDS.length && old && Object.keys(old).length) HANDS = [{ id: 'h1', name: 'Мій почерк', g: old }];
+} catch (e) {}
+function saveLocal() { try { localStorage.setItem('rukopys.hands', JSON.stringify(HANDS)); } catch (e) {} }
+function saveHand() { saveLocal(); queueSync(); }
+function useHand(id) {
+  CUR = HANDS.find(x => x.id === id) || null;
+  GL = CUR ? CUR.g : {};
+  if (CUR) $('hname').value = CUR.name;
+}
+function isHand() { return $('font').value.startsWith('hand:'); }
+function buildFonts() {
+  const sel = $('font');
+  [...sel.options].filter(o => o.dataset.x).forEach(o => o.remove());
+  HANDS.forEach(h => { const o = new Option('✎ ' + h.name, 'hand:' + h.id); o.dataset.x = 1; sel.add(o); });
+  const n = new Option('＋ Новий почерк', '__new');
+  n.dataset.x = 1;
+  sel.add(n);
+}
+buildFonts();
+
+/* ---- Акаунти й хмара (Supabase) ---- */
+const SB_URL = 'https://erygsyyqfarnrtdomday.supabase.co';
+const SB_KEY = 'sb_publishable_m8z-YGQZtA8ucoSPXiLnjQ_ADpLh8Z0';
+const UUID = /^[0-9a-f-]{36}$/;
+let sb = null, USER = null, syncT = null;
+const busy = new WeakSet(), again = new WeakSet();
+try { sb = supabase.createClient(SB_URL, SB_KEY); } catch (e) {}
+
+function tr(m) {
+  m = m || '';
+  if (/Invalid login/i.test(m)) return 'Невірна пошта або пароль.';
+  if (/already registered/i.test(m)) return 'Така пошта вже зареєстрована. Натисніть «Увійти».';
+  if (/Password should/i.test(m)) return 'Пароль занадто простий (мінімум 6 символів).';
+  if (/rate limit/i.test(m)) return 'Забагато спроб. Зачекайте трохи й повторіть.';
+  if (/fetch/i.test(m)) return 'Немає зв’язку із сервером. Перевірте інтернет.';
+  return m;
+}
+function authMsg(t, ok) { $('amsg').textContent = t; $('amsg').className = ok ? 'ok' : ''; }
+async function doAuth(kind) {
+  if (!sb) return authMsg('Сервіс входу недоступний. Спробуйте пізніше.');
+  const email = $('aemail').value.trim(), password = $('apass').value;
+  if (!email || password.length < 6) return authMsg('Введіть пошту та пароль (мінімум 6 символів).');
+  authMsg('Зачекайте…', true);
+  const r = kind === 'up' ? await sb.auth.signUp({ email, password }) : await sb.auth.signInWithPassword({ email, password });
+  if (r.error) return authMsg(tr(r.error.message));
+  if (kind === 'up' && !r.data.session) return authMsg('Лист із підтвердженням надіслано на пошту. Підтвердіть і поверніться сюди.', true);
+  $('auth').hidden = true;
+  $('apass').value = '';
+}
+function updateAuthUI() {
+  $('loginBtn').textContent = USER ? 'Вийти' : 'Увійти';
+  $('who').textContent = USER ? USER.email : '';
+}
+function clearLocal() {
+  HANDS = []; CUR = null; GL = {};
+  try { localStorage.removeItem('rukopys.hands'); localStorage.removeItem('rukopys.hand'); } catch (e) {}
+  buildFonts();
+  $('font').value = 'Caveat';
+  applyStyle();
+  render();
+}
+async function pullHands() {
+  const sel = $('font').value;
+  const res = await sb.from('hands').select('id,name,glyphs').order('updated_at');
+  if (res.error) return;
+  const remote = res.data.map(h => ({ id: h.id, name: h.name, g: h.glyphs || {} }));
+  for (const h of HANDS.filter(x => !UUID.test(x.id) && Object.keys(x.g).length)) {
+    const r = await sb.from('hands').insert({ name: h.name, glyphs: h.g }).select('id').single();
+    if (!r.error) remote.push({ id: r.data.id, name: h.name, g: h.g });
+  }
+  HANDS = remote;
+  saveLocal();
+  buildFonts();
+  $('font').value = HANDS.some(h => 'hand:' + h.id === sel) ? sel : 'Caveat';
+  if (isHand()) useHand($('font').value.slice(5)); else { CUR = null; GL = {}; }
+  applyStyle();
+  render();
+}
+function queueSync() {
+  if (!sb || !USER || !CUR || !Object.keys(CUR.g).length) return;
+  const h = CUR;
+  clearTimeout(syncT);
+  syncT = setTimeout(() => pushHand(h), 800);
+}
+async function pushHand(h) {
+  if (busy.has(h)) { again.add(h); return; }
+  busy.add(h);
+  const row = { name: h.name, glyphs: h.g, updated_at: new Date().toISOString() };
+  if (UUID.test(h.id)) await sb.from('hands').update(row).eq('id', h.id);
+  else {
+    const r = await sb.from('hands').insert(row).select('id').single();
+    if (!r.error) {
+      const sel = $('font').value, was = 'hand:' + h.id;
+      h.id = r.data.id;
+      saveLocal();
+      buildFonts();
+      $('font').value = sel === was ? 'hand:' + h.id : sel;
+    }
+  }
+  busy.delete(h);
+  if (again.has(h)) { again.delete(h); pushHand(h); }
+}
+function cloudDelete(h) {
+  if (sb && USER && h && UUID.test(h.id)) sb.from('hands').delete().eq('id', h.id).then(() => {});
+}
+$('loginBtn').onclick = () => { if (USER) sb.auth.signOut(); else { authMsg(''); $('auth').hidden = false; $('aemail').focus(); } };
+$('ax').onclick = () => { $('auth').hidden = true; };
+$('ain').onclick = () => doAuth('in');
+$('aup').onclick = () => doAuth('up');
+$('apass').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth('in'); });
+if (sb) sb.auth.onAuthStateChange((ev, session) => {
+  const u = session ? session.user : null;
+  if ((u && u.id) === (USER && USER.id)) return;
+  USER = u;
+  updateAuthUI();
+  setTimeout(() => { if (u) pullHands(); else clearLocal(); }, 0);
+});
+
+function pathD(st) {
+  const d = st.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
+  return st.length === 1 ? d + ' L' + st[0][0] + ' ' + st[0][1] : d;
+}
+function svgOf(g, cls, vb, style) {
+  const t = document.createElement('span');
+  t.innerHTML = '<svg class="' + cls + '" viewBox="' + vb + '"' + (style ? ' style="' + style + '"' : '') + '><path d="' + g.s.map(pathD).join(' ') + '"/></svg>';
+  return t.firstChild;
+}
+function isLow(ch) { return ch === ch.toLowerCase() && ch !== ch.toUpperCase(); }
+function endpoints(g) {
+  let ent = g.s[0][0], ex = g.s[0][g.s[0].length - 1];
+  g.s.forEach(st => {
+    const a = st[0], b = st[st.length - 1];
+    if (a[0] - 0.5 * a[1] < ent[0] - 0.5 * ent[1]) ent = a;
+    if (b[0] + 0.5 * b[1] > ex[0] + 0.5 * ex[1]) ex = b;
+  });
+  return { ent, ex };
+}
+/* Одна серія літер = один SVG; між малими літерами малюється з’єднувальна лінія */
+function runSVG(run, join) {
+  let paths = '', prev = null;
+  run.forEach(({ ch, g }) => {
+    const l = g.x0 + 0.06, r = g.x0 + g.w - 0.06;
+    const link = join && prev && isLow(prev.ch) && isLow(ch);
+    const dx = (prev ? prev.right + (link ? 0.02 : 0.12) : 0.06) - l;
+    const e = endpoints(g);
+    if (link) {
+      const a = prev.ex, b = [e.ent[0] + dx, e.ent[1]];
+      if (Math.abs(b[1] - a[1]) < 0.55) {
+        const m = Math.max(0.03, (b[0] - a[0]) / 2);
+        paths += '<path d="M' + a[0].toFixed(3) + ' ' + a[1].toFixed(3) + ' C' + (a[0] + m).toFixed(3) + ' ' + a[1].toFixed(3) + ' ' + (b[0] - m).toFixed(3) + ' ' + b[1].toFixed(3) + ' ' + b[0].toFixed(3) + ' ' + b[1].toFixed(3) + '"/>';
+      }
+    }
+    paths += '<path transform="translate(' + dx.toFixed(3) + ' 0)" d="' + g.s.map(pathD).join(' ') + '"/>';
+    prev = { ch, right: r + dx, ex: [e.ex[0] + dx, e.ex[1]] };
+  });
+  const W = prev.right + 0.06;
+  const t = document.createElement('span');
+  t.innerHTML = '<svg class="g" viewBox="0 0 ' + W.toFixed(3) + ' 1" style="width:' + (W * 1.5).toFixed(3) + 'em">' + paths + '</svg>';
+  return t.firstChild;
+}
+function fillWord(s, p, custom) {
+  if (!custom) { s.textContent = p; return; }
+  const join = $('join').checked;
+  let run = [];
+  const flush = () => { if (run.length) { s.appendChild(runSVG(run, join)); run = []; } };
+  for (const ch of p) {
+    const g = GL[ch] || GL[NORM[ch]];
+    if (g) run.push({ ch, g });
+    else { flush(); s.appendChild(document.createTextNode(ch)); }
+  }
+  flush();
+}
+
+const ov = $('ov'), cv = $('cv'), cx = cv.getContext('2d');
+let idx = 0, strokes = [], drawing = false;
+
+function openEd() { ov.hidden = false; showGrid(); }
+
+function showGrid() {
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === TAB));
+  $('vdraw').hidden = true;
+  $('vgrid').hidden = false;
+  const box = $('gridbox');
+  box.textContent = '';
+  GROUPS().forEach(([h, set]) => {
+    const t = document.createElement('div');
+    t.className = 'gh';
+    t.textContent = h;
+    const gr = document.createElement('div');
+    gr.className = 'gg';
+    for (const ch of set) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cell';
+      b.setAttribute('aria-label', 'Літера ' + ch);
+      const g = GL[ch];
+      if (g) { b.classList.add('done'); b.appendChild(svgOf(g, 'th', '0.1 0.15 0.8 0.8')); }
+      else b.textContent = ch;
+      b.onclick = () => openLetter(ALL.indexOf(ch));
+      gr.appendChild(b);
+    }
+    box.append(t, gr);
+  });
+  const n = ALL.filter(c => GL[c]).length;
+  $('prog').textContent = 'У цьому розділі намальовано: ' + n + ' з ' + ALL.length;
+  $('make').disabled = !Object.keys(GL).length;
+}
+
+function openLetter(i) {
+  idx = (i + ALL.length) % ALL.length;
+  const g = GL[ALL[idx]];
+  strokes = g ? g.s.map(s => s.slice()) : [];
+  $('vgrid').hidden = true;
+  $('vdraw').hidden = false;
+  $('dt').textContent = '«' + ALL[idx] + '»  ' + (idx + 1) + ' з ' + ALL.length;
+  size();
+  paint();
+}
+
+function size() {
+  const r = Math.floor(Math.min(innerWidth * 0.88, innerHeight * 0.6, 560));
+  cv.style.width = cv.style.height = r + 'px';
+  cv.width = cv.height = Math.round(r * (devicePixelRatio || 1));
+}
+
+function paint() {
+  const W = cv.width;
+  cx.clearRect(0, 0, W, W);
+  cx.strokeStyle = '#d5dedb';
+  cx.lineWidth = Math.max(1, W / 400);
+  [0.25, 0.45, 0.7].forEach(y => { cx.beginPath(); cx.moveTo(0, y * W); cx.lineTo(W, y * W); cx.stroke(); });
+  cx.fillStyle = 'rgba(27,63,168,.14)';
+  cx.font = Math.round(W * 0.62) + 'px Onest, sans-serif';
+  cx.textAlign = 'center';
+  cx.textBaseline = 'alphabetic';
+  cx.fillText(ALL[idx], W / 2, W * 0.7);
+  cx.strokeStyle = '#1b3fa8';
+  cx.lineWidth = W * 0.035;
+  cx.lineCap = cx.lineJoin = 'round';
+  for (const s of strokes) {
+    cx.beginPath();
+    s.forEach((p, i) => i ? cx.lineTo(p[0] * W, p[1] * W) : cx.moveTo(p[0] * W, p[1] * W));
+    if (s.length === 1) cx.lineTo(s[0][0] * W + 0.1, s[0][1] * W);
+    cx.stroke();
+  }
+}
+
+function pt(e) {
+  const r = cv.getBoundingClientRect();
+  return [+((e.clientX - r.left) / r.width).toFixed(3), +((e.clientY - r.top) / r.height).toFixed(3)];
+}
+function commit() {
+  const ch = ALL[idx];
+  if (!strokes.length) delete GL[ch];
+  else {
+    const xs = strokes.flat().map(p => p[0]);
+    const a = Math.min(...xs), b = Math.max(...xs);
+    GL[ch] = { s: strokes.map(s => s.slice()), x0: +(a - 0.06).toFixed(3), w: +(b - a + 0.12).toFixed(3) };
+  }
+  saveHand();
+}
+cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); drawing = true; strokes.push([pt(e)]); paint(); };
+cv.onpointermove = e => { if (drawing) { strokes[strokes.length - 1].push(pt(e)); paint(); } };
+cv.onpointerup = cv.onpointercancel = () => { if (drawing) { drawing = false; commit(); } };
+$('undo').onclick = () => { strokes.pop(); commit(); paint(); };
+$('clr').onclick = () => { strokes = []; commit(); paint(); };
+$('prev').onclick = () => openLetter(idx - 1);
+$('next').onclick = () => openLetter(idx + 1);
+$('back').onclick = showGrid;
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { TAB = b.dataset.t; setList(); showGrid(); });
+function closeEd() {
+  ov.hidden = true;
+  if (CUR && !Object.keys(CUR.g).length) { cloudDelete(CUR); HANDS = HANDS.filter(h => h !== CUR); CUR = null; GL = {}; saveHand(); }
+  buildFonts();
+  $('font').value = CUR ? 'hand:' + CUR.id : 'Caveat';
+  applyStyle();
+  render();
+}
+$('ovx').onclick = closeEd;
+$('hname').oninput = () => { if (CUR) { CUR.name = $('hname').value.trim() || 'Без назви'; saveHand(); } };
+$('delHand').onclick = () => {
+  if (!CUR || !confirm('Видалити почерк «' + CUR.name + '»?')) return;
+  cloudDelete(CUR);
+  HANDS = HANDS.filter(h => h !== CUR);
+  CUR = null; GL = {};
+  saveHand();
+  closeEd();
+};
+$('editHand').onclick = openEd;
+$('make').onclick = closeEd;
+addEventListener('resize', () => { if (!ov.hidden && !$('vdraw').hidden) { size(); paint(); } });
+
+buildSwatches();
+applyStyle();
+render();
+fit();
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(checkOverflow);
+}
+</script>
 </body>
 </html>
-git commit -m "оновив текст"
-git push
