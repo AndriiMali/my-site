@@ -30,6 +30,7 @@ body{font-family:'Onest',system-ui,sans-serif;color:var(--text);background:var(-
 .brand{font-family:'Marck Script',cursive;font-size:30px;line-height:1}
 .who{font-size:13px;opacity:.8}
 .who:empty{display:none}
+.pro{padding:8px 14px;border:0;border-radius:999px;background:#f2b705;color:#241c00;font:inherit;font-weight:600;cursor:pointer}
 .lg{padding:8px 14px;border:1px solid var(--panel);border-radius:999px;background:transparent;color:var(--panel);font:inherit;font-weight:500;cursor:pointer}
 .abox{width:min(92vw,380px);padding:18px;border-radius:14px;background:var(--panel);display:flex;flex-direction:column;gap:6px}
 .abox input{width:100%;padding:10px 12px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;font:inherit}
@@ -96,10 +97,25 @@ input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--border
     repeating-linear-gradient(115deg,transparent 0,transparent calc(11mm - 1px),#cdd9ea calc(11mm - 1px),#cdd9ea 11mm);
   background-size:100% var(--step),auto;
   background-position:0 var(--off),0 0}
-.out{position:absolute;left:var(--left);top:var(--top);right:8mm;bottom:12mm;overflow:hidden;
+.out{position:absolute;left:var(--left);top:var(--top);right:8mm;height:var(--H);overflow:hidden;
   white-space:pre-wrap;overflow-wrap:break-word;
-  line-height:var(--step);font-size:var(--fs);color:var(--ink);font-family:'Caveat',cursive}
+  line-height:var(--step);font-size:var(--fs);color:var(--ink);font-family:inherit}
 .out .w{display:inline-block}
+.ovl{position:absolute;inset:0;width:100%;height:100%;touch-action:none;pointer-events:none}
+.pages.tool .ovl{pointer-events:auto;cursor:crosshair}
+.ovl path{fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.ovl .hit{stroke:transparent;stroke-width:4}
+.pages.erase .ovl .hit,.pages.move .ovl .hit{pointer-events:stroke}
+.pages.move .ovl{cursor:move}
+.pages.erase .ovl{cursor:pointer}
+.tools{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.tools button{height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:18px;cursor:pointer;color:var(--text)}
+.tools button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.dr2{display:flex;gap:10px;align-items:center;margin-top:8px}
+.dr2 input[type=range]{flex:1}
+.dbtn{display:flex;gap:8px;margin-top:8px}
+.dbtn button{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:#fff;font:inherit;cursor:pointer}
+.pages{display:flex;flex-direction:column;align-items:center;gap:24px;flex:none}
 
 /* Реклама і контакти */
 .ad{width:min(210mm,100%);min-height:90px;display:flex;align-items:center;justify-content:center;border:2px dashed #7fa392;border-radius:10px;color:#c9ddd2;font-size:14px;text-align:center;padding:10px}
@@ -148,15 +164,18 @@ input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--border
   .top,.panel,.ad,.foot,.pop,.ov{display:none!important}
   .layout{display:block}
   .desk{padding:0;background:none;display:block;overflow:visible}
-  .sheet{zoom:1!important;box-shadow:none;margin:0}
+  .pages{zoom:1!important;display:block}
+  .sheet{box-shadow:none;margin:0;break-after:page;page-break-after:always}
+  .sheet:last-child{break-after:auto;page-break-after:auto}
 }
 </style>
+<!-- ADSENSE: після реєстрації в AdSense вставте сюди код із рядком <script async src="https://pagead2.googlesyndication.com/..."> -->
 </head>
 <body>
 
 <header class="top">
   <div class="brand">Рукопис</div>
-  <nav class="nav"><a class="hl" href="#help">Допомога</a><span class="who" id="who"></span><button class="lg" id="loginBtn" type="button">Увійти</button><a class="dl" id="download" href="#">Скачати додаток</a></nav>
+  <nav class="nav"><a class="hl" href="#help">Допомога</a><span class="who" id="who"></span><button class="pro" id="proBtn" type="button">Pro</button><button class="lg" id="loginBtn" type="button">Увійти</button><a class="dl" id="download" href="#">Скачати додаток</a></nav>
 </header>
 <div class="pop" id="pop" role="status" hidden>
   <b>Додаток ще вчиться писати</b>
@@ -223,22 +242,46 @@ input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--border
       <label class="check"><input type="checkbox" id="natural" checked> Природний вигляд (слова трохи «гуляють»)</label>
     </div>
 
-    <p class="note" id="overflow" hidden>Текст не вмістився на аркуш. Скоротіть його або зменште розмір.</p>
+    <div class="field">
+      <div class="lbl">Малювання поверх аркуша</div>
+      <div class="tools" id="tools">
+        <button type="button" data-t="" aria-pressed="true" title="Без малювання" aria-label="Без малювання">✋</button>
+        <button type="button" data-t="pen" aria-pressed="false" title="Олівець" aria-label="Олівець">✎</button>
+        <button type="button" data-t="arrow" aria-pressed="false" title="Стрілка" aria-label="Стрілка">➚</button>
+        <button type="button" data-t="ellipse" aria-pressed="false" title="Коло" aria-label="Коло">○</button>
+        <button type="button" data-t="rect" aria-pressed="false" title="Квадрат" aria-label="Квадрат">▭</button>
+        <button type="button" data-t="star" aria-pressed="false" title="Зірка" aria-label="Зірка">☆</button>
+        <button type="button" data-t="move" aria-pressed="false" title="Перемістити: потягніть фігуру" aria-label="Перемістити">✥</button>
+        <button type="button" data-t="erase" aria-pressed="false" title="Гумка: клікніть на малюнок" aria-label="Гумка">⌫</button>
+      </div>
+      <div class="dr2">
+        <input type="color" id="dcol" value="#d32f2f" aria-label="Колір малюнка">
+        <input type="range" id="dw" min="1" max="8" value="3" aria-label="Товщина лінії">
+      </div>
+      <div class="dbtn">
+        <button type="button" id="dundo">Скасувати</button>
+        <button type="button" id="dclr">Очистити малюнки</button>
+      </div>
+    </div>
 
-    <button class="btn" id="print" type="button">Надрукувати</button>
+    <p class="note" id="overflow" hidden>Текст дуже довгий: показано лише перші 12 сторінок.</p>
+    <p id="pcount" style="margin:0 0 10px;font-size:14px;color:var(--muted)"></p>
+
+    <button class="btn" id="print" type="button">Друк / зберегти як PDF</button>
+    <button class="btn2" id="png" type="button" style="margin-top:8px">Зберегти як PNG (кожна сторінка окремо)</button>
+    <p id="uleft" style="margin:10px 0 0;font-size:14px;color:var(--muted)"></p>
   </section>
 
   <section class="desk" id="desk" aria-label="Аркуш">
-    <div class="sheet paper-lined" id="sheet">
-      <div class="out" id="out"></div>
-    </div>
+    <div class="pages" id="pages"></div>
 
-    <div class="ad">Тут буде реклама</div>
+    <div class="ad" id="adbox" hidden></div>
   </section>
 </main>
 
 <footer class="foot" id="help">
   <h2>Допомога та зв’язок з менеджером</h2>
+  <p><a href="/privacy.html">Політика конфіденційності</a></p>
   <p>Є запитання, помилка чи ідея? Напишіть нам: Telegram <a href="https://t.me/Andriimali">@Andriimali</a> або пошта <a href="mailto:rykopuc@gmail.com">rykopuc@gmail.com</a></p>
 </footer>
 
@@ -283,11 +326,25 @@ input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--border
   </div>
 </div>
 
+<div class="ov" id="lim" hidden role="dialog" aria-modal="true" aria-label="Ліміт">
+  <div class="abox">
+    <div class="ovhead"><b>Ліміт на сьогодні вичерпано</b><button class="ic" id="limx" type="button" aria-label="Закрити">✕</button></div>
+    <p class="ap" id="limt"></p>
+    <div class="acts"><button class="btn" id="limpro" type="button">Оформити Pro</button><button class="btn2" id="limok" type="button">Зрозуміло</button></div>
+  </div>
+</div>
+
+<div class="ov" id="proDlg" hidden role="dialog" aria-modal="true" aria-label="Pro">
+  <div class="abox">
+    <div class="ovhead"><b>Рукопис Pro</b><button class="ic" id="prox" type="button" aria-label="Закрити">✕</button></div>
+    <p class="ap" id="prot"></p>
+    <div class="acts" id="proacts"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-const sheet = $('sheet');
-const out = $('out');
 const COLORS = ['#1b3fa8', '#14213d', '#111111', '#b3261e', '#1f6f43', '#6b2fa0'];
 const PRESETS = {
   grid:  { step: 5,  fs: 17 },
@@ -303,56 +360,76 @@ function rnd(i) {
   return (x - Math.floor(x)) * 2 - 1;
 }
 
-function render() {
-  out.textContent = '';
-  const natural = $('natural').checked;
-  const custom = isHand();
-  const parts = $('text').value.split(/(\s+)/);
+const MAXP = 12;
+let fontWait = false;
+
+function makeContent() {
+  const natural = $('natural').checked, custom = isHand();
   const frag = document.createDocumentFragment();
   let n = 0;
-  for (const p of parts) {
+  for (const p of $('text').value.split(/(\s+)/)) {
     if (p === '') continue;
-    if (/^\s+$/.test(p)) {
-      frag.appendChild(document.createTextNode(p));
-      continue;
-    }
+    if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(p)); continue; }
     const s = document.createElement('span');
     fillWord(s, p, custom);
     if (natural) {
       n++;
-      const dy = rnd(n) * 1.6;
-      const rot = rnd(n * 7 + 3) * 1.4;
       s.className = 'w';
-      s.style.transform = 'translateY(' + dy.toFixed(2) + 'px) rotate(' + rot.toFixed(2) + 'deg)';
+      s.style.transform = 'translateY(' + (rnd(n) * 1.6).toFixed(2) + 'px) rotate(' + (rnd(n * 7 + 3) * 1.4).toFixed(2) + 'deg)';
     }
     frag.appendChild(s);
   }
-  out.appendChild(frag);
-  checkOverflow();
+  return frag;
 }
 
-function checkOverflow() {
-  $('overflow').hidden = !(out.scrollHeight > out.clientHeight + 2);
+/* Кожна сторінка показує той самий текст, зсунутий вгору на i екранів */
+function addPage(i) {
+  const step = +$('step').value, lines = Math.floor(266 / step);
+  const sh = document.createElement('div');
+  sh.className = 'sheet paper-' + $('paper').value;
+  sh.style.cssText = '--step:' + step + 'mm;--H:' + (lines * step) + 'mm;--fs:' + $('fs').value + 'px;--shift:' + $('shift').value + 'px;--ink:' + ink;
+  const o = document.createElement('div');
+  o.className = 'out';
+  const inn = document.createElement('div');
+  inn.style.transform = 'translateY(calc(var(--H) * -' + i + '))';
+  inn.appendChild(makeContent());
+  o.appendChild(inn);
+  sh.appendChild(o);
+  sh.insertAdjacentHTML('beforeend', '<svg class="ovl" data-p="' + i + '" viewBox="0 0 210 296" preserveAspectRatio="none"></svg>');
+  $('pages').appendChild(sh);
+  return { o, inn };
 }
+
+function build() {
+  const pg = $('pages');
+  pg.textContent = '';
+  pg.style.fontFamily = isHand() ? "'Caveat', cursive" : "'" + $('font').value + "', cursive";
+  const first = addPage(0);
+  const need = Math.max(1, Math.ceil(first.inn.offsetHeight / first.o.offsetHeight - 0.02));
+  const n = Math.min(MAXP, need);
+  for (let i = 1; i < n; i++) addPage(i);
+  $('overflow').hidden = need <= MAXP;
+  $('pcount').textContent = 'Сторінок: ' + n;
+  drawAll();
+  if (document.fonts && document.fonts.status === 'loading' && !fontWait) {
+    fontWait = true;
+    document.fonts.ready.then(() => { fontWait = false; build(); });
+  }
+}
+function render() { build(); }
 
 function applyStyle() {
-  sheet.style.setProperty('--step', $('step').value + 'mm');
-  sheet.style.setProperty('--fs', $('fs').value + 'px');
-  sheet.style.setProperty('--shift', $('shift').value + 'px');
-  sheet.style.setProperty('--ink', ink);
-  out.style.fontFamily = isHand() ? "'Caveat', cursive" : "'" + $('font').value + "', cursive";
-  $('editHand').hidden = !isHand();
-  sheet.className = 'sheet paper-' + $('paper').value;
   $('fsv').textContent = $('fs').value + ' px';
   $('stepv').textContent = $('step').value + ' мм';
   $('shiftv').textContent = $('shift').value + ' px';
-  checkOverflow();
+  $('editHand').hidden = !isHand();
+  build();
 }
 
 /* Підбір розміру аркуша під екран */
 function fit() {
   const avail = $('desk').clientWidth - 32;
-  sheet.style.zoom = Math.min(1, avail / 794);
+  $('pages').style.zoom = Math.min(1, avail / 794);
 }
 
 /* Кольори чорнила */
@@ -383,6 +460,7 @@ function setInk(c) {
     b.setAttribute('aria-pressed', b.style.background && rgbToHex(b.style.background) === c.toLowerCase() ? 'true' : 'false'));
   $('inkPick').value = c;
   applyStyle();
+  saveWork();
 }
 
 function rgbToHex(rgb) {
@@ -420,7 +498,7 @@ $('paper').addEventListener('change', () => {
   $('fs').value = p.fs;
   applyStyle();
 });
-$('print').addEventListener('click', () => window.print());
+$('print').addEventListener('click', async () => { if (await takeUse()) window.print(); });
 $('download').addEventListener('click', e => { e.preventDefault(); $('pop').hidden = !$('pop').hidden; });
 $('popx').addEventListener('click', () => { $('pop').hidden = true; });
 addEventListener('keydown', e => { if (e.key === 'Escape') $('pop').hidden = true; });
@@ -497,10 +575,13 @@ async function doAuth(kind) {
 function updateAuthUI() {
   $('loginBtn').textContent = USER ? 'Вийти' : 'Увійти';
   $('who').textContent = USER ? USER.email : '';
+  showLeft();
 }
 function clearLocal() {
   HANDS = []; CUR = null; GL = {};
-  try { localStorage.removeItem('rukopys.hands'); localStorage.removeItem('rukopys.hand'); } catch (e) {}
+  try { localStorage.removeItem('rukopys.hands'); localStorage.removeItem('rukopys.hand'); localStorage.removeItem('rukopys.work'); } catch (e) {}
+  DRAW = [];
+  $('text').value = DEF_TEXT;
   buildFonts();
   $('font').value = 'Caveat';
   applyStyle();
@@ -522,6 +603,7 @@ async function pullHands() {
   if (isHand()) useHand($('font').value.slice(5)); else { CUR = null; GL = {}; }
   applyStyle();
   render();
+  await pullWork();
 }
 function queueSync() {
   if (!sb || !USER || !CUR || !Object.keys(CUR.g).length) return;
@@ -737,12 +819,349 @@ $('editHand').onclick = openEd;
 $('make').onclick = closeEd;
 addEventListener('resize', () => { if (!ov.hidden && !$('vdraw').hidden) { size(); paint(); } });
 
+/* ---- Малювання поверх аркуша (координати в мм) ---- */
+let DRAW = [], DR = null, MV = null, TOOL = '';
+function starPts(cx, cy, R) {
+  const a = [];
+  for (let k = 0; k < 10; k++) {
+    const r = k % 2 ? R * 0.42 : R, t = -Math.PI / 2 + k * Math.PI / 5;
+    a.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]);
+  }
+  return a;
+}
+function shapeD(o) {
+  const f = n => +n.toFixed(2);
+  const x1 = o.x1, y1 = o.y1, x2 = o.x2, y2 = o.y2;
+  if (o.t === 'pen') {
+    const q = o.pts.length === 1 ? [o.pts[0], o.pts[0]] : o.pts;
+    return 'M' + q.map(p => p[0] + ' ' + p[1]).join('L');
+  }
+  if (o.t === 'arrow') {
+    const a = Math.atan2(y2 - y1, x2 - x1), h = Math.min(4, Math.hypot(x2 - x1, y2 - y1) / 2);
+    const pt = d => f(x2 - h * Math.cos(a + d)) + ' ' + f(y2 - h * Math.sin(a + d));
+    return 'M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + 'M' + pt(0.45) + 'L' + x2 + ' ' + y2 + 'L' + pt(-0.45);
+  }
+  const l = Math.min(x1, x2), t = Math.min(y1, y2), w = f(Math.abs(x2 - x1)), hh = f(Math.abs(y2 - y1));
+  if (o.t === 'rect') return 'M' + f(l) + ' ' + f(t) + 'h' + w + 'v' + hh + 'h' + (-w) + 'z';
+  if (o.t === 'ellipse') {
+    const rx = f(w / 2), ry = f(hh / 2);
+    return 'M' + f(l) + ' ' + f(t + ry) + 'a' + rx + ' ' + ry + ' 0 1 0 ' + w + ' 0a' + rx + ' ' + ry + ' 0 1 0 ' + (-w) + ' 0z';
+  }
+  if (o.t === 'star') {
+    return 'M' + starPts(l + w / 2, t + hh / 2, Math.min(w, hh) / 2).map(q => f(q[0]) + ' ' + f(q[1])).join('L') + 'z';
+  }
+  return '';
+}
+function drawAll() {
+  const list = DRAW.concat(DR ? [Object.assign({}, DR, { tmp: 1 })] : []);
+  document.querySelectorAll('.ovl').forEach(sv => {
+    const pg = +sv.dataset.p;
+    sv.innerHTML = list.map((o, i) => {
+      if (o.p !== pg) return '';
+      const d = shapeD(o);
+      return '<g' + (o.tmp ? '' : ' data-i="' + i + '"') + '><path class="hit" d="' + d + '"/><path d="' + d + '" stroke="' + o.color + '" stroke-width="' + o.w + '"/></g>';
+    }).join('');
+  });
+}
+function mm(e, sv) {
+  const r = sv.getBoundingClientRect();
+  return [+((e.clientX - r.left) / r.width * 210).toFixed(2), +((e.clientY - r.top) / r.height * 296).toFixed(2)];
+}
+const pagesEl = $('pages');
+pagesEl.addEventListener('pointerdown', e => {
+  const sv = e.target.closest ? e.target.closest('.ovl') : null;
+  if (!sv || !TOOL) return;
+  e.preventDefault();
+  if (TOOL === 'erase') {
+    const g = e.target.closest('g[data-i]');
+    if (g) { DRAW.splice(+g.dataset.i, 1); drawAll(); saveWork(); }
+    return;
+  }
+  if (TOOL === 'move') {
+    const g = e.target.closest('g[data-i]');
+    if (g) { MV = { o: DRAW[+g.dataset.i], sv, last: mm(e, sv) }; sv.setPointerCapture(e.pointerId); }
+    return;
+  }
+  const pt = mm(e, sv);
+  DR = { sv, p: +sv.dataset.p, t: TOOL, color: $('dcol').value, w: +($('dw').value * 0.15).toFixed(2), pts: [pt], x1: pt[0], y1: pt[1], x2: pt[0], y2: pt[1] };
+  sv.setPointerCapture(e.pointerId);
+  drawAll();
+});
+pagesEl.addEventListener('pointermove', e => {
+  if (MV) {
+    const q = mm(e, MV.sv), dx = q[0] - MV.last[0], dy = q[1] - MV.last[1], o = MV.o;
+    MV.last = q;
+    o.x1 += dx; o.y1 += dy; o.x2 += dx; o.y2 += dy;
+    if (o.pts) o.pts = o.pts.map(a => [+(a[0] + dx).toFixed(2), +(a[1] + dy).toFixed(2)]);
+    drawAll();
+    return;
+  }
+  if (!DR) return;
+  const pt = mm(e, DR.sv);
+  if (DR.t === 'pen') DR.pts.push(pt);
+  DR.x2 = pt[0]; DR.y2 = pt[1];
+  drawAll();
+});
+function endDraw() {
+  if (MV) { MV = null; saveWork(); return; }
+  if (!DR) return;
+  const o = DR;
+  DR = null;
+  delete o.sv;
+  if (o.t === 'pen' || Math.hypot(o.x2 - o.x1, o.y2 - o.y1) > 1) DRAW.push(o);
+  drawAll();
+  saveWork();
+}
+pagesEl.addEventListener('pointerup', endDraw);
+pagesEl.addEventListener('pointercancel', endDraw);
+document.querySelectorAll('#tools button').forEach(b => b.onclick = () => {
+  TOOL = b.dataset.t;
+  document.querySelectorAll('#tools button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  pagesEl.classList.toggle('tool', !!TOOL);
+  pagesEl.classList.toggle('erase', TOOL === 'erase');
+  pagesEl.classList.toggle('move', TOOL === 'move');
+});
+$('dundo').onclick = () => { DRAW.pop(); drawAll(); saveWork(); };
+$('dclr').onclick = () => { DRAW = []; drawAll(); saveWork(); };
+
+/* ---- Автозбереження роботи: текст, налаштування, малюнки ---- */
+const DEF_TEXT = $('text').value;
+let workT = null;
+function snapshot() {
+  return { text: $('text').value, font: $('font').value, fs: $('fs').value, step: $('step').value, shift: $('shift').value,
+    paper: $('paper').value, natural: $('natural').checked, join: $('join').checked, ink: ink, draw: DRAW };
+}
+function saveWork() {
+  clearTimeout(workT);
+  workT = setTimeout(async () => {
+    const w = snapshot();
+    try { localStorage.setItem('rukopys.work', JSON.stringify(w)); } catch (e) {}
+    if (sb && USER) await sb.from('works').upsert({ user_id: USER.id, data: w, updated_at: new Date().toISOString() });
+  }, 700);
+}
+function applyWork(w) {
+  if (!w) return;
+  if (typeof w.text === 'string') $('text').value = w.text;
+  ['fs', 'step', 'shift', 'paper'].forEach(k => { if (w[k] != null) $(k).value = w[k]; });
+  ['natural', 'join'].forEach(k => { if (w[k] != null) $(k).checked = !!w[k]; });
+  if (w.font && [...$('font').options].some(o => o.value === w.font)) $('font').value = w.font;
+  if (isHand()) useHand($('font').value.slice(5));
+  if (w.ink) {
+    ink = w.ink;
+    $('inkPick').value = ink;
+    document.querySelectorAll('.sw').forEach(b => b.setAttribute('aria-pressed', rgbToHex(b.style.background) === ink.toLowerCase() ? 'true' : 'false'));
+  }
+  DRAW = Array.isArray(w.draw) ? w.draw : [];
+  applyStyle();
+}
+async function pullWork() {
+  const r = await sb.from('works').select('data').maybeSingle();
+  if (r.error) return;
+  if (r.data && r.data.data) applyWork(r.data.data); else saveWork();
+}
+document.querySelector('.panel').addEventListener('input', saveWork);
+document.querySelector('.panel').addEventListener('change', saveWork);
+function restoreLocal() {
+  try { applyWork(JSON.parse(localStorage.getItem('rukopys.work'))); } catch (e) {}
+}
+
+/* ---- Збереження в PNG ---- */
+const PPM = 7.87; /* пікселів на мм, приблизно 200 dpi */
+function renderSheet(sh) {
+  const c = document.createElement('canvas');
+  c.width = Math.round(210 * PPM);
+  c.height = Math.round(296 * PPM);
+  const x = c.getContext('2d');
+  const sr = sh.getBoundingClientRect(), k = sr.width / 210; /* клієнтських px на мм */
+  const step = +$('step').value, px = 25.4 / 96, off = 18 + (+$('shift').value) * px, paper = $('paper').value;
+  const fsmm = +$('fs').value * px;
+  x.fillStyle = '#fffefa';
+  x.fillRect(0, 0, c.width, c.height);
+  x.scale(PPM, PPM);
+  x.lineCap = x.lineJoin = 'round';
+  /* папір */
+  x.lineWidth = px;
+  if (paper !== 'blank') {
+    x.strokeStyle = '#a9bfdc';
+    x.beginPath();
+    for (let y = off - Math.floor(off / step) * step; y <= 296 + step; y += step) { x.moveTo(0, y - px / 2); x.lineTo(210, y - px / 2); }
+    if (paper === 'grid') for (let xx = 20 - Math.floor(20 / step) * step; xx <= 210 + step; xx += step) { x.moveTo(xx - px / 2, 0); x.lineTo(xx - px / 2, 296); }
+    x.stroke();
+  }
+  if (paper === 'slant') {
+    const a = 115 * Math.PI / 180, nx = Math.sin(a), ny = -Math.cos(a);
+    x.strokeStyle = '#cdd9ea';
+    x.beginPath();
+    for (let j = 0; j <= 30; j++) {
+      const cc = 11 * j - px / 2, bx = nx * cc, by = ny * cc;
+      x.moveTo(bx + ny * 600, by - nx * 600);
+      x.lineTo(bx - ny * 600, by + nx * 600);
+    }
+    x.stroke();
+  }
+  /* текст у межах поля */
+  const out = sh.querySelector('.out'), orr = out.getBoundingClientRect();
+  x.save();
+  x.beginPath();
+  x.rect((orr.left - sr.left) / k, (orr.top - sr.top) / k, orr.width / k, orr.height / k);
+  x.clip();
+  x.fillStyle = x.strokeStyle = ink;
+  x.font = fsmm + 'px ' + $('pages').style.fontFamily;
+  x.textBaseline = 'alphabetic';
+  for (const w of out.firstChild.children) {
+    const wr = w.getBoundingClientRect();
+    if (wr.bottom < orr.top || wr.top > orr.bottom) continue;
+    const m = /rotate\(([-\d.]+)deg\)/.exec(w.style.transform || '');
+    const cx = ((wr.left + wr.right) / 2 - sr.left) / k, cy = ((wr.top + wr.bottom) / 2 - sr.top) / k;
+    x.save();
+    x.translate(cx, cy);
+    x.rotate(m ? +m[1] * Math.PI / 180 : 0);
+    x.translate(-cx, -cy);
+    for (const n of w.childNodes) {
+      if (n.nodeType === 3) {
+        const rg = document.createRange();
+        rg.selectNodeContents(n);
+        const r = rg.getBoundingClientRect();
+        x.fillText(n.data, (r.left - sr.left) / k, (r.top - sr.top) / k + x.measureText(n.data).fontBoundingBoxAscent);
+      } else if (n.tagName && n.tagName.toLowerCase() === 'svg') {
+        const r = n.getBoundingClientRect(), sc = 1.5 * fsmm, vw = n.viewBox.baseVal.width;
+        x.save();
+        x.translate(((r.left + r.right) / 2 - sr.left) / k - vw * sc / 2, ((r.top + r.bottom) / 2 - sr.top) / k - sc / 2);
+        x.scale(sc, sc);
+        x.lineWidth = 0.035;
+        for (const pa of n.querySelectorAll('path')) {
+          const t = /translate\(([-\d.]+) ([-\d.]+)\)/.exec(pa.getAttribute('transform') || '');
+          x.save();
+          if (t) x.translate(+t[1], +t[2]);
+          x.stroke(new Path2D(pa.getAttribute('d')));
+          x.restore();
+        }
+        x.restore();
+      }
+    }
+    x.restore();
+  }
+  x.restore();
+  /* малюнки */
+  const pi = +sh.querySelector('.ovl').dataset.p;
+  for (const o of DRAW) {
+    if (o.p !== pi) continue;
+    x.strokeStyle = o.color;
+    x.lineWidth = o.w;
+    x.stroke(new Path2D(shapeD(o)));
+  }
+  return c;
+}
+async function savePNG() {
+  if (!(await takeUse())) return;
+  const btn = $('png'), old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Зачекайте…';
+  try {
+    await document.fonts.ready;
+    const sheets = [...document.querySelectorAll('#pages .sheet')];
+    for (let i = 0; i < sheets.length; i++) {
+      const blob = await new Promise(r => renderSheet(sheets[i]).toBlob(r, 'image/png'));
+      if (!blob) continue;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'rukopys-' + (i + 1) + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      await new Promise(r => setTimeout(r, 350));
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+$('png').onclick = savePNG;
+
+/* ---- Ліміт безкоштовних збережень на день ---- */
+const FREE = 3; /* для гостей; для акаунтів ліміт задано на сервері */
+const today = () => new Date().toISOString().slice(0, 10);
+function guestUsed() {
+  try { const u = JSON.parse(localStorage.getItem('rukopys.usage')); return u && u.d === today() ? u.n : 0; } catch (e) { return 0; }
+}
+function limitMsg(lim) {
+  $('limt').textContent = 'Ви використали ' + lim + ' безкоштовні збереження на сьогодні (друк, PDF або PNG). Ліміт оновиться завтра, а з Pro збереження без обмежень.';
+  $('lim').hidden = false;
+}
+async function takeUse() {
+  if (sb && USER) {
+    const r = await sb.rpc('use_export');
+    if (r.error || !r.data) return true; /* якщо сервер недоступний, не блокуємо */
+    showLeft();
+    if (!r.data.ok) { limitMsg(r.data.lim || FREE); return false; }
+    return true;
+  }
+  const n = guestUsed();
+  if (n >= FREE) { limitMsg(FREE); return false; }
+  try { localStorage.setItem('rukopys.usage', JSON.stringify({ d: today(), n: n + 1 })); } catch (e) {}
+  showLeft();
+  return true;
+}
+async function showLeft() {
+  let left = null, lim = FREE;
+  proUntil = null;
+  if (sb && USER) {
+    const r = await sb.rpc('export_left');
+    if (!r.error && r.data) { left = r.data.left; lim = r.data.lim || FREE; proUntil = r.data.until || null; }
+  } else left = Math.max(0, FREE - guestUsed());
+  $('uleft').textContent = left === null ? '' : left < 0 ? 'Pro: без обмежень' + (proUntil ? ' до ' + new Date(proUntil).toLocaleDateString('uk-UA') : '') : 'Сьогодні залишилось збережень: ' + left + ' з ' + lim;
+}
+$('limx').onclick = $('limok').onclick = () => { $('lim').hidden = true; };
+
+/* ---- Реклама Google AdSense ---- */
+/* Після схвалення AdSense вставте сюди свої значення: client виглядає як 'ca-pub-1234567890123456', slot це число блоку */
+const ADS = { client: '', slot: '' };
+if (ADS.client && ADS.slot) {
+  const box = $('adbox');
+  box.hidden = false;
+  box.style.border = 'none';
+  box.innerHTML = '<ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="' + ADS.client + '" data-ad-slot="' + ADS.slot + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+  try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+}
+
+/* ---- Pro ---- */
+/* pay: посилання на оплату від платіжного сервісу ({uid} і {email} підставляються автоматично). Поки порожнє, оплата вручну через Telegram */
+const PRO = { price: '99 ₴ на місяць', pay: '' };
+let proUntil = null;
+async function openPro() {
+  await showLeft();
+  const a = $('proacts');
+  a.textContent = '';
+  const btn = (txt, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = txt; b.onclick = fn; a.appendChild(b); };
+  let msg = 'Pro знімає ліміт: друк, PDF і PNG без обмежень. Вартість: ' + PRO.price + '.';
+  if (!USER) {
+    msg += ' Щоб оформити Pro, спершу увійдіть в акаунт.';
+    btn('Увійти', 'btn', () => { $('proDlg').hidden = true; $('loginBtn').click(); });
+  } else if (proUntil) {
+    msg = 'Pro активний до ' + new Date(proUntil).toLocaleDateString('uk-UA') + '. Дякуємо за підтримку!';
+  } else if (PRO.pay) {
+    btn('Оформити Pro', 'btn', () => window.open(PRO.pay.replace('{uid}', encodeURIComponent(USER.id)).replace('{email}', encodeURIComponent(USER.email)), '_blank', 'noopener'));
+  } else {
+    msg += ' Оплата поки приймається вручну: напишіть у Telegram і вкажіть пошту акаунта (' + USER.email + '). Після оплати Pro буде активовано, зазвичай протягом доби.';
+    btn('Написати в Telegram', 'btn', () => window.open('https://t.me/Andriimali', '_blank', 'noopener'));
+  }
+  btn('Закрити', 'btn2', () => { $('proDlg').hidden = true; });
+  $('prot').textContent = msg;
+  $('proDlg').hidden = false;
+}
+$('proBtn').onclick = openPro;
+$('prox').onclick = () => { $('proDlg').hidden = true; };
+$('limpro').onclick = () => { $('lim').hidden = true; openPro(); };
+
 buildSwatches();
+restoreLocal();
 applyStyle();
+showLeft();
 render();
 fit();
 if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(checkOverflow);
+  document.fonts.ready.then(build);
 }
 </script>
 </body>
